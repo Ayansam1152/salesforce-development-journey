@@ -1,0 +1,28 @@
+<template>
+
+    <lightning-card title={title}>
+        <lightning-layout class="slds-p-around_medium">
+            <lightning-layout-item size="6">
+                <lightning-input label="Enter the account name!" onchange={handleChange}></lightning-input>
+            </lightning-layout-item>
+            <lightning-layout-item class="slds-p-top_large slds-m-left_medium">
+                <lightning-button label="Search" onclick={handleSearchClick}></lightning-button>
+                <lightning-button label="Clear" onclick={handleClearClick} class="slds-m-left_small"></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+
+    <template if:true={isEmptySearch}>
+        <div class="slds-text-color_error slds-p-around_medium">{emptySearchOrZeroResult}</div>
+    </template>
+
+    <template if:false={isEmptySearch}>
+        <lightning-card title="Here is your result">
+            <template for:each={filterAccounts} for:item="acc">
+
+                <div key={acc.id}>Account Name : {acc.name}</div>
+            </template>
+        </lightning-card>
+    </template>
+
+</template>
