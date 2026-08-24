@@ -1,0 +1,16 @@
+<template>
+    <lightning-card >
+        <lightning-layout class="slds-m-around_medium">
+            <lightning-layout-item>
+                <lightning-combobox label="Select Account" value={selectedValue} placeholder="Choose an options..."
+                    options={dropdownOptions} onchange={handleDropdownChange}>
+                </lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item class="slds-m-top_large slds-m-left_medium">
+                <lightning-button label="Filter" onclick={handleClickFilter}></lightning-button>
+                <lightning-button label="Clear" onclick={handleResetFilter} class="slds-m-left_small"></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+
+</template>

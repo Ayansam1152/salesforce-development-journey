@@ -1,0 +1,17 @@
+<template>
+    <lightning-card title="Account Dashboard">
+        <template if:false={isAccountIdEmpty}>
+            <div class="slds-m-bottom_medium">Selected account id is : {selectedAccountId}</div>
+        </template>
+
+        <lightning-card class="slds-p-around_medium">
+            <c-account-filter onfiltervalue={handleFilterValue}  onresetfilterevent = {handleResetFilter}></c-account-filter>
+        </lightning-card>
+        <lightning-card>
+            <c-account-list account-filter={childFilterValue}
+                onselectaccountevent={handleSelectAccount}></c-account-list>
+        </lightning-card>
+
+    </lightning-card>
+
+</template>
