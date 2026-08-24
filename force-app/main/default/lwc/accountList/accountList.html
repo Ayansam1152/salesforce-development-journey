@@ -1,0 +1,21 @@
+<template>
+
+    <lightning-card>
+
+        <template for:each={filteredAccounts} for:item="acc">
+            <lightning-layout key={acc.id} class="slds-box slds-m-bottom_medium">
+                <lightning-layout-item>
+                    Account Name : {acc.name}
+                </lightning-layout-item>
+                <lightning-layout-item>
+                    Industry: {acc.industry}
+                </lightning-layout-item>
+                <lightning-layout-item class="slds-m-left_medium">
+                    <lightning-button label="select" data-id={acc.id} onclick={handleAccountSelect}></lightning-button>
+                </lightning-layout-item>
+            </lightning-layout>
+        </template>
+
+    </lightning-card>
+
+</template>
