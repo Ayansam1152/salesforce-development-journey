@@ -1,0 +1,28 @@
+<template>
+
+    <lightning-card title="Contact List">
+        <template if:true={isEmptySearchOrResultNone}>
+            <lightning-card>{showMessage}</lightning-card>
+        </template>
+        <template if:false={isEmptySearchOrResultNone}>
+            <template for:each={searchResults} for:item="con">
+                <lightning-layout key={con.id} class="box">
+                    <lightning-layout-item class="slds-m-around_small">
+                        Contact Name:{con.Name}
+                    </lightning-layout-item>
+                    <lightning-layout-item class="slds-m-around_small">
+                        Email:{con.Email}
+                    </lightning-layout-item>
+                    <lightning-layout-item class="slds-m-around_small">
+                        Phone:{con.Phone}
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+        </template>
+
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading..."></lightning-spinner>
+        </template>
+    </lightning-card>
+
+</template>
