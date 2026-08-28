@@ -1,0 +1,44 @@
+<template>
+
+    <lightning-card title="Search your book on internet! Just try">
+        <lightning-layout class="slds-p-around_medium">
+            <lightning-layout-item>
+                <lightning-input label="Enter Book Name.." onchange={handleChange}></lightning-input>
+            </lightning-layout-item>
+
+            <lightning-layout-item class="slds-m-left_medium slds-m-top_large">
+                <lightning-button label="Search" onclick={handleSearchClick}></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+
+    <template if:true={isLoading}>
+        <lightning-card>
+            <lightning-spinner alternative-text="Loading..."></lightning-spinner>
+        </lightning-card>
+    </template>
+
+    <template if:true={isEmptyOrNoResult}>
+        <div>{showMessage}</div>
+    </template>
+
+    <template if:false={isLoading}>
+        <!-- <lightning-card> -->
+        <lightning-layout multiple-rows="true">
+            <template for:each={searchResults} for:item="book">
+
+                <lightning-layout-item key={book.id} size="3" class="slds-p-around_medium"
+                    style="border-style: groove;">
+                    <img src={book.image} alt="img not found" style="height:300px; width:90%" />
+                    Name:{book.name}
+                    <br>
+                    Author:{book.author} <br>
+                    Image: {book.image}
+                </lightning-layout-item>
+
+            </template>
+        </lightning-layout>
+        <!-- </lightning-card> -->
+    </template>
+
+</template>
