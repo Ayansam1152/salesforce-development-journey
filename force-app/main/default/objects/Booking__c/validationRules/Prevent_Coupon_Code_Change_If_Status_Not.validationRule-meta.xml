@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Prevent_Coupon_Code_Change_If_Status_Not</fullName>
+    <active>true</active>
+    <description>Will not allowed coupon code change if status not pending</description>
+    <errorConditionFormula>ISCHANGED( Coupon_Code__c ) &amp;&amp;  NOT(ISPICKVAL( Status__c , &apos;Pending&apos;))</errorConditionFormula>
+    <errorDisplayField>Coupon_Code__c</errorDisplayField>
+    <errorMessage>You can not change coupon code if status is not pending</errorMessage>
+</ValidationRule>
