@@ -8,4 +8,5 @@ public with sharing class Constants {
     public static final String BOOKING_PENDING = 'Pending';
     public static final String BOOKING_CANCELLED_STATUS = 'Cancelled';
     public static final String BOOKING_CONFIRMED_STATUS = 'Confirmed';
+    public static final String BOOKING_CLOSED_STATUS = 'Closed';
 }
