@@ -12,5 +12,8 @@
     "css": true,
     "html": true
   },
-  "salesforce.agentforceVibesAutocomplete.enableAutocompletions": true
+  "salesforce.agentforceVibesAutocomplete.enableAutocompletions": true,
+  "cSpell.words": [
+    "Queueable"
+  ]
 }
