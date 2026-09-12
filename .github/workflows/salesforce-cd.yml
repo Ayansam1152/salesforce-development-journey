@@ -13,6 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Salesforce CLI
+        run: |
+          npm install --global @salesforce/cli
+
       - name: Authenticate to Salesforce
         run: |
           echo "${{ secrets.SF_JWT_KEY }}" > server.key
