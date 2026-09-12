@@ -56,8 +56,78 @@ public with sharing class ReviewTriggerHandlerService {
                 logger.publish(e.getMessage());
             }
         }
-
+        
         createCaseForLowRating(reviews);
+    }
+    
+    public static void calculateAverageCarRating(List<Review__c> reviews)
+    {
+        Set<Id> bookingIds = new Set<Id>();
+        Set<Id> carIds = new Set<Id>();
+        Map<Id,Decimal> carAverageRatingMap = new Map<Id, Decimal>();
+        
+        for(Review__c review : reviews)
+        {
+            bookingIds.add(review.Booking__c);
+        }
+
+        if(bookingIds == null) return;
+
+        List<Booking__c> bookingList = [Select Id, Car__c From Booking__c Where Id in : bookingIds];
+
+        for(Booking__c bookingRec : bookingList)
+        {
+            carIds.add(bookingRec.Car__c);
+        }
+        
+        // System.debug('Booking Ids: ' + bookingIds);
+        // System.debug('Car Ids: ' + carIds);
+
+
+        List<AggregateResult> resultList = [
+            Select Booking__r.Car__c carId, 
+            AVG(Rating__c) avgRating
+            from Review__c 
+            Where Booking__c in :bookingIds 
+            and Booking__r.Car__c in :carIds 
+            Group By Booking__r.Car__c 
+        ];
+        
+        for(AggregateResult result : resultList)
+        {
+            Id carId = (Id)result.get('carId');
+            Decimal averageRating =(Decimal) result.get('avgRating');
+            
+            carAverageRatingMap.put(carId, averageRating.round(System.RoundingMode.HALF_UP));
+
+            // System.debug('Car Id: ' + carId + ', Average Rating: ' + averageRating);
+        }
+        
+        List<Car__c> carsToBeUpdated = new List<Car__c>();
+        
+        for(Id carId : carIds)
+        {
+            if(carAverageRatingMap.containsKey(carId))
+            {
+                Car__c updateCar = new Car__c(Id = carId,Average_Rating__c = carAverageRatingMap.get(carId));
+                carsToBeUpdated.add(updateCar);
+            }
+        }
+        
+        // System.debug('Cars to be updated: ' + carsToBeUpdated);
+
+        if(carsToBeUpdated.size() > 0 )
+        {
+            try {
+                update carsToBeUpdated;
+                
+            } catch (Exception e) {
+                Log logger = Log.get();
+                
+                logger.publish(e.getMessage());
+            }
+        }
+        
     }
     
     private static void createCaseForLowRating(List<Review__c> reviews)
@@ -79,13 +149,13 @@ public with sharing class ReviewTriggerHandlerService {
         RecordTypeId = :reviewIssueRecordTypeId and 
         Type = :Constants.CASE_TYPE_NEGATIVE_REVIEW and 
         Review_ID__c in :reviewIds];
-
+        
         Set<Id> existingReviewIds = new Set<Id>();
-
+        
         for(Case existingCase : existingCases){
             existingReviewIds.add(existingCase.Review_ID__c);
         }
-
+        
         List<Case> casesToInsert = new List<Case>();
         for(Review__c review : reviewList){
             if(!existingReviewIds.contains(review.Id))
@@ -101,11 +171,11 @@ public with sharing class ReviewTriggerHandlerService {
                 newCase.ContactId  = review.Customer__c;
                 newCase.Subject = 'Negative Review Case for Review ID: ' + review.Id +' with Rating: ' + review.Rating__c;
                 newCase.Description = 'A negative review has been submitted with comments of ' + review.Comments__c + ' and a rating of ' + review.Rating__c + '. Please investigate the issue and take necessary actions.';
-
+                
                 casesToInsert.add(newCase);
             }
         }
-
+        
         if(casesToInsert.size() > 0)
         {
             try {
@@ -117,7 +187,7 @@ public with sharing class ReviewTriggerHandlerService {
                 logger.publish(e.getMessage());
             }
         }
-
+        
     }
     
     // My Thought process
@@ -157,6 +227,6 @@ public with sharing class ReviewTriggerHandlerService {
         }
         
         Group customerSupportGroup = [Select Id From Group Where DeveloperName = 'Customer_Support_Review_Group' LIMIT 1];
-        */
+         */
     }
 }
