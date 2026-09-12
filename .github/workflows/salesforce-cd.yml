@@ -28,3 +28,12 @@ jobs:
             --jwt-key-file server.key \
             --instance-url "https://login.salesforce.com" \
             --alias cd-org
+        
+      - name: Validate deployment
+        run: |
+          sf project deploy start \
+          --source-dir force-app \
+          --target-org cd-org \
+          --dry-run \
+          --test-level RunLocalTests \
+          --wait 30
