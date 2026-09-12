@@ -47,7 +47,7 @@ Develop + test locally
         ↓
 Push feature branch
         ↓
-Create PR → developer
+Create PR → Developer_Branch
         ↓
 GitHub Actions CI
         ↓
@@ -64,13 +64,13 @@ blocked    allowed
 
 ------------------------------------------------------------------------
 
-## 2. CI/CD vs CD
+## 2. CI/CD Overview
 
-What we implemented first is **Continuous Integration (CI)**.
+We initially implemented **Continuous Integration (CI)** and later extended the same setup with **Continuous Delivery/Deployment (CD)**. The current learning pipeline uses the `Developer_Branch` as the automatic deployment branch.
 
 ### CI
 
-Every pull request targeting `developer` runs:
+Every pull request targeting `Developer_Branch` runs:
 
 -   Checkout repository
 -   Install Salesforce CLI
@@ -86,20 +86,50 @@ No actual Salesforce deployment happens because we use:
 --dry-run
 ```
 
-### Future CD
+### CD
 
-Later we can extend this to:
+After a feature PR is successfully validated and merged into `Developer_Branch`, the merge creates a push to `Developer_Branch`, which triggers the CD workflow.
+
+The CD workflow performs: 
+
+- Checkout repository
+- Install Salesforce CLI
+- Authenticate to Salesforce using JWT
+- Validate the deployment with `--dry-run`
+- Run `RunLocalTests`
+- If validation succeeds, perform the actual deployment
+- If validation fails, stop the workflow and do not execute the deployment step
+
+Current CD flow:
 
 ``` text
-developer → validation → deploy to Dev/UAT
-master    → validation → deploy to Production
+Developer_Branch
+       ↓
+      push
+       ↓
+   CD workflow
+       ↓
+JWT authentication
+       ↓
+Deployment validation
+       ↓
+RunLocalTests
+       ↓
+   ┌────┴────┐
+   │         │
+ FAIL      PASS
+   │         │
+   ↓         ↓
+ STOP     Deploy
+           ↓
+      Salesforce Org
 ```
 
-For now, the pipeline is intentionally **CI-only**.
+The first CD target in this learning setup is the same Developer Edition Salesforce org. Production deployment is intentionally left for a later stage.
 
 ------------------------------------------------------------------------
 
-# 3. Complete CI Architecture
+# 3. Complete CI/CD Architecture
 
 ``` text
 ┌──────────────────────────────────────────────────────────┐
@@ -145,7 +175,7 @@ For now, the pipeline is intentionally **CI-only**.
 │       └── Admin-approved users                           │
 │                    │                                     │
 │                    ▼                                     │
-│               CI Salesforce User                         │
+│               CI/CD Salesforce User                         │
 │                    │                                     │
 │                    ▼                                     │
 │          Metadata API / Deployment                       │
@@ -181,7 +211,7 @@ into Salesforce or GitHub source code.
              Verify JWT signature
                      │
                      ▼
-                CI User
+                CI/CD User
                      │
                      ▼
              Salesforce access
@@ -220,7 +250,7 @@ Before starting:
 -   Git
 -   GitHub repository
 -   Salesforce project using standard Salesforce DX structure
--   A dedicated Salesforce CI user
+-   A dedicated Salesforce CI/CD user
 -   OpenSSL available locally
 
 Typical Salesforce DX structure:
@@ -229,7 +259,7 @@ Typical Salesforce DX structure:
 salesforce-ci/
 ├── .github/
 │   └── workflows/
-│       └── salesforce-ci.yml
+│       └── salesforce-cicd.yml
 ├── force-app/
 │   └── main/
 │       └── default/
@@ -242,7 +272,7 @@ Do **not** put private authentication files inside the repository.
 
 ------------------------------------------------------------------------
 
-# 6. Step 1 --- Create a Dedicated Salesforce CI User
+# 6. Step 1 --- Create a Dedicated Salesforce CI/CD User
 
 Do not use your normal personal Salesforce user for CI/CD.
 
@@ -256,7 +286,7 @@ can be used initially to reduce permission troubleshooting.
 Example:
 
 ``` text
-First Name: CI
+First Name: CI/CD
 Last Name: GitHub
 Username: <unique Salesforce username>
 ```
@@ -355,10 +385,10 @@ Example:
 
 ``` text
 External Client App Name:
-GitHub CI
+GitHub CI/CD
 
 API Name:
-GitHub_CI
+GitHub_CICD
 ```
 
 Enable OAuth.
@@ -455,7 +485,7 @@ Salesforce needs the public certificate to verify JWT signatures.
 
 Open:
 
-**External Client App Manager → GitHub CI → Policies**
+**External Client App Manager → GitHub CI/CD → Policies**
 
 Set:
 
@@ -478,10 +508,10 @@ Example:
 
 ``` text
 Label:
-GitHub CI Access
+GitHub CI/CD Access
 
 API Name:
-GitHub_CI_Access
+GitHub_CICD_Access
 ```
 
 Assign this permission set to the dedicated CI Salesforce user.
@@ -495,7 +525,7 @@ Conceptually:
 GitHub CI Permission Set
           │
           ▼
-      CI User
+      CI/CD User
           │
           ▼
 External Client App
@@ -510,7 +540,7 @@ JWT authentication
 
 Go to:
 
-**External Client App Manager → GitHub CI → Settings → OAuth Settings**
+**External Client App Manager → GitHub CI/CD → Settings → OAuth Settings**
 
 Retrieve the:
 
@@ -541,7 +571,7 @@ sf org login jwt `
   --client-id "YOUR_CONSUMER_KEY" `
   --jwt-key-file "C:\path\to\server.key" `
   --instance-url "https://login.salesforce.com" `
-  --alias github-ci-test
+  --alias github-cicd-test
 ```
 
 Successful output should look similar to:
@@ -553,7 +583,7 @@ Successfully authorized <CI username> with org ID <ORG_ID>
 Then verify:
 
 ``` powershell
-sf org display --target-org github-ci-test
+sf org display --target-org github-cicd-test
 ```
 
 ### Why test locally first?
@@ -700,7 +730,94 @@ jobs:
 
 ------------------------------------------------------------------------
 
-# 15. What Each Workflow Step Does
+# 15. CD Workflow
+
+The CD workflow is stored separately from the PR-validation workflow:
+
+``` text
+.github/workflows/salesforce-cd.yml
+```
+
+It triggers when code is pushed to `Developer_Branch`. In this setup, a successful merge into `Developer_Branch` creates that push.
+
+Current workflow:
+
+``` yaml
+name: Salesforce CD
+
+on:
+  push:
+    branches:
+      - Developer_Branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: |
+          npm install --global @salesforce/cli
+
+      - name: Authenticate to Salesforce
+        run: |
+          echo "${{ secrets.SF_JWT_KEY }}" > server.key
+          chmod 600 server.key
+
+          sf org login jwt \
+            --username "${{ secrets.SF_USERNAME }}" \
+            --client-id "${{ secrets.SF_CLIENT_ID }}" \
+            --jwt-key-file server.key \
+            --instance-url "https://login.salesforce.com" \
+            --alias cd-org
+
+      - name: Validate deployment
+        run: |
+          sf project deploy start \
+            --source-dir force-app \
+            --target-org cd-org \
+            --dry-run \
+            --test-level RunLocalTests \
+            --wait 30
+
+      - name: Deploy to Salesforce
+        run: |
+          sf project deploy start \
+            --source-dir force-app \
+            --target-org cd-org \
+            --test-level RunLocalTests \
+            --wait 30
+```
+
+### Why the CD workflow is safe
+
+GitHub Actions runs steps sequentially. If the validation command fails, the job fails at that step and the actual deployment step is not executed.
+
+``` text
+Validation with --dry-run
+          ↓
+      RunLocalTests
+          ↓
+     PASS → Deploy
+     FAIL → Stop
+```
+
+The same three GitHub Secrets used by CI are reused by CD:
+
+``` text
+SF_USERNAME
+SF_CLIENT_ID
+SF_JWT_KEY
+```
+
+No separate Salesforce authentication mechanism is required for the first CD implementation.
+
+------------------------------------------------------------------------
+
+# 16. What Each Workflow Step Does
 
 ## Checkout
 
@@ -784,7 +901,7 @@ sf project deploy start \
 
 ------------------------------------------------------------------------
 
-# 16. Step 10 --- Commit Workflow to Feature Branch
+# 17. Step 10 --- Commit Workflow to Feature Branch
 
 The workflow itself should be version controlled.
 
@@ -802,7 +919,7 @@ The repository should contain:
 salesforce-ci/
 ├── .github/
 │   └── workflows/
-│       └── salesforce-ci.yml
+│       └── salesforce-cicd.yml
 ├── force-app/
 ├── manifest/
 ├── sfdx-project.json
@@ -811,7 +928,7 @@ salesforce-ci/
 
 ------------------------------------------------------------------------
 
-# 17. Step 11 --- Create Pull Request
+# 18. Step 11 --- Create Pull Request
 
 Create:
 
@@ -830,11 +947,11 @@ on:
       - developer
 ```
 
-the workflow runs automatically for PRs targeting `developer`.
+the workflow runs automatically for PRs targeting `Developer_Branch`.
 
 ------------------------------------------------------------------------
 
-# 18. First CI Failure We Encountered
+# 19. First CI Failure We Encountered
 
 The first successful infrastructure run initially failed because overall
 Apex coverage was below Salesforce's required deployment threshold.
@@ -878,7 +995,7 @@ requirements, not just the one feature's test class.
 
 ------------------------------------------------------------------------
 
-# 19. Do Not Disable Tests Just to Make CI Green
+# 20. Do Not Disable Tests Just to Make CI Green
 
 Do NOT change the workflow to:
 
@@ -902,11 +1019,11 @@ Pass legitimate Salesforce quality gate
 
 ------------------------------------------------------------------------
 
-# 20. Step 12 --- GitHub Branch Protection / Ruleset
+# 21. Step 12 --- GitHub Branch Protection / Ruleset
 
 CI failing is not enough if GitHub still lets someone merge.
 
-We therefore configured branch protection/ruleset for the `developer`
+We therefore configured branch protection/ruleset for the `Developer_Branch`
 branch.
 
 Go to:
@@ -940,7 +1057,7 @@ Enable:
 Require a pull request before merging
 ```
 
-This prevents normal direct changes to `developer`.
+This prevents normal direct changes to `Developer_Branch`.
 
 ------------------------------------------------------------------------
 
@@ -1000,7 +1117,7 @@ the rule is configured to block bypass.
 
 ------------------------------------------------------------------------
 
-# 21. Final PR Security Flow
+# 22. Final PR Security Flow
 
 After branch protection:
 
@@ -1036,7 +1153,7 @@ feature/book-store
 
 ------------------------------------------------------------------------
 
-# 22. Intentional Failure Test
+# 23. Intentional Failure Test
 
 To prove branch protection actually works, we intentionally broke a
 test.
@@ -1096,7 +1213,7 @@ Merge blocked
 
 ------------------------------------------------------------------------
 
-# 23. Restore the Test
+# 24. Restore the Test
 
 After confirming the branch protection behavior, restore the original
 passing assertion.
@@ -1127,7 +1244,7 @@ Merge allowed
 
 ------------------------------------------------------------------------
 
-# 24. Why CI Was Fast in This Project
+# 25. Why CI Was Fast in This Project
 
 The first successful pipeline completed in roughly 49 seconds.
 
@@ -1166,7 +1283,7 @@ Apex tests
 
 ------------------------------------------------------------------------
 
-# 25. Security Checklist
+# 26. Security Checklist
 
 ## Salesforce
 
@@ -1198,14 +1315,14 @@ Apex tests
 ☑ SF_JWT_KEY secret
 ☑ Workflow stored in .github/workflows/
 ☑ PR trigger configured
-☑ developer branch protected
+☑ Developer_Branch protected
 ☑ Salesforce CI required
 ☑ Direct merge blocked when CI fails
 ```
 
 ------------------------------------------------------------------------
 
-# 26. Things That Must Never Be Committed
+# 27. Things That Must Never Be Committed
 
 Never commit:
 
@@ -1242,7 +1359,7 @@ depending on the use case.
 
 ------------------------------------------------------------------------
 
-# 27. Troubleshooting
+# 28. Troubleshooting
 
 ## Error: `refresh_token scope is required`
 
@@ -1345,7 +1462,7 @@ Repository
 Verify:
 
 ``` text
-☑ developer is targeted
+☑ Developer_Branch is targeted
 ☑ Require pull request
 ☑ Require status checks
 ☑ Validate Salesforce Changes is selected
@@ -1355,14 +1472,14 @@ Verify:
 
 ------------------------------------------------------------------------
 
-# 28. Current Workflow vs Future Production Workflow
+# 29. Current Workflow vs Future Production Workflow
 
 ## Current
 
 ``` text
 feature/*
     ↓
-PR → developer
+PR → Developer_Branch
     ↓
 GitHub Actions
     ↓
@@ -1384,7 +1501,7 @@ We can evolve this into:
 ``` text
 feature/*
     ↓
-PR → developer
+PR → Developer_Branch
     ↓
 CI validation
     ├── Salesforce metadata validation
@@ -1409,7 +1526,7 @@ Production deployment
 
 ------------------------------------------------------------------------
 
-# 29. Recommended Future Improvements
+# 30. Recommended Future Improvements
 
 Do these later rather than making the first pipeline unnecessarily
 complicated.
@@ -1470,7 +1587,7 @@ Audit/reporting
 
 ------------------------------------------------------------------------
 
-# 30. Quick Setup Checklist
+# 31. Quick Setup Checklist
 
 When setting this up again from scratch:
 
@@ -1496,21 +1613,26 @@ When setting this up again from scratch:
 [ ] Create SF_JWT_KEY GitHub Secret
 [ ] Create .github/workflows/salesforce-ci.yml
 [ ] Push workflow
-[ ] Create feature → developer PR
+[ ] Create feature → Developer_Branch PR
 [ ] Confirm CI runs
 [ ] Confirm tests execute
-[ ] Protect developer branch
+[ ] Protect Developer_Branch
 [ ] Make Salesforce CI required
 [ ] Test intentional failure
 [ ] Confirm merge is blocked
 [ ] Restore passing test
 [ ] Confirm CI passes
+[ ] Create/verify salesforce-cd.yml
+[ ] Confirm CD triggers on Developer_Branch push
+[ ] Confirm CD validation runs RunLocalTests
+[ ] Confirm successful validation deploys to Salesforce
+[ ] Confirm failed validation stops before deployment
 [ ] Merge feature
 ```
 
 ------------------------------------------------------------------------
 
-# 31. Final Mental Model
+# 32. Final Mental Model
 
 If you forget everything else, remember this:
 
@@ -1537,7 +1659,7 @@ External Client App
    │
    │ server.crt verifies
    ▼
-CI Salesforce User
+CI/CD Salesforce User
    │
    ▼
 Salesforce Metadata API
