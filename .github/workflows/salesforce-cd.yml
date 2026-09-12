@@ -1,0 +1,14 @@
+name: Salesforce CD
+
+on:
+  push:
+    branches:
+      - Developer_Branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
