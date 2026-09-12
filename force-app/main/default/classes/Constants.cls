@@ -8,6 +8,7 @@ public with sharing class Constants {
     public static final String BOOKING_PENDING = 'Pending';
     public static final String BOOKING_CANCELLED_STATUS = 'Cancelled';
     public static final String BOOKING_CONFIRMED_STATUS = 'Confirmed';
+    public static final String BOOKING_COMPLETED_STATUS = 'Completed';
     public static final String BOOKING_CLOSED_STATUS = 'Closed';
     public static final Integer LOW_RATING_THRESHOLD = 3;
     public static final Integer DEFAULT_RATING_THRESHOLD = 5;
