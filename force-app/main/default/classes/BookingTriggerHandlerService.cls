@@ -60,7 +60,7 @@ public with sharing class BookingTriggerHandlerService {
         
         for(Booking__c booking : bookings)
         {
-            if(isOverlap(booking, mapCarWithExistingBookings.get(booking.Car__c)))
+            if(isOverlap(booking, mapCarWithExistingBookings?.get(booking.Car__c)))
             {
                 // show the error to the user
                 break;
@@ -69,6 +69,8 @@ public with sharing class BookingTriggerHandlerService {
     }
     
     private static Boolean isOverlap(Booking__c newBooking, List<Booking__c> existingBookings){
+        if(existingBookings == null || existingBookings.isEmpty()) return false;
+        
         Datetime startDate = newBooking.Start_Date_Time__c;
         Datetime endDate = newBooking.End_Date_Time__c;
         
