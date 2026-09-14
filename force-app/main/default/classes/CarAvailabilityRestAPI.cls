@@ -16,17 +16,23 @@ global with sharing class CarAvailabilityRestAPI {
         Date startDate;
         Date endDate;
         
+        System.debug('Test Start values stored');
+
         if(rawStartDate == null || rawEndDate == null)
         {
             RestContext.response.statusCode = 400;
             return new ResponseWrapper(false, 'Start date and end date are required', null);
         }
+
+         System.debug('Test Start: date validated');
         
         if(String.isBlank(location))
         {
             RestContext.response.statusCode = 400;
             return new ResponseWrapper(false, 'Location is required', null);
         }
+
+         System.debug('Test Start: location validated');
         
         try {
             startDate = Date.valueOf(rawStartDate);
@@ -35,12 +41,16 @@ global with sharing class CarAvailabilityRestAPI {
             RestContext.response.statusCode = 400;
             return new ResponseWrapper(false, 'Invalid date format. Please use YYYY-MM-DD format (e.g., 2026-09-14).', null);
         }
+
+         System.debug('Test Start: date format also validated');
         
         if(startDate > endDate)
         {
             RestContext.response.statusCode = 400;
             return new ResponseWrapper(false, 'Start date cannot be after end date', null);
         }
+
+         System.debug('Test Start: date range validated');
         
         Set<Id> bookedCarIds = new Set<Id>();
         
@@ -67,6 +77,8 @@ global with sharing class CarAvailabilityRestAPI {
         }
         
         List<Car__c> cars = Database.query(query);
+
+         System.debug('Test Start: query fired');
         
         if(cars.isEmpty())
         {
@@ -81,13 +93,14 @@ global with sharing class CarAvailabilityRestAPI {
             availableCars.add(carResponse);
         }
         
+         System.debug('Test Start: response created');
         return new ResponseWrapper(true, Constants.CAR_API_SUCCESS_MESSAGE, availableCars);
     }
     
     global class ResponseWrapper{
-        Boolean isSuccess;
-        String message;
-        List<CarResponseWrapper> availableCars;
+        public Boolean isSuccess;
+        public String message;
+        public List<CarResponseWrapper> availableCars;
         
         public ResponseWrapper(Boolean success, String message, List<CarResponseWrapper> availableCars){
             this.isSuccess = success;
