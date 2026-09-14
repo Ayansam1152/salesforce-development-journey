@@ -43,7 +43,7 @@ public class TestDataFactory {
         
         for (Integer i = 0; i < numberOfCars; i++) {
             cars.add(new Car__c(
-            Name = 'TestCar' + i,
+                Name = 'TestCar' + i,
             Make__c = 'TestMake' + i,
             Model__c = 'TestModel' + i,
             Year__c = 2020 + i,
@@ -52,8 +52,9 @@ public class TestDataFactory {
             Transmission_Type__c = 'Automatic',
             Mileage_Limit_Per_Day__c = 100 + i,
             Rental_Rate_Per_day__c = 100 + i,
-            Number_of_Seats__c = 5
-            ));
+            Number_of_Seats__c = 5,
+            PickupLocation__c = 'Pune'
+                ));
         }
         
         insert cars;
@@ -66,12 +67,12 @@ public class TestDataFactory {
         for (Integer i = 0; i < numberOfBookings; i++) {
             bookings.add(new Booking__c(
                 Customer__c = contacts[Math.Mod(i, contacts.size())].Id,
-                Car__c = cars[Math.MOD(i , cars.size())].Id,
-                Start_Date_Time__c = Date.today().addDays(1+i),
-                End_Date_Time__c = Date.today().addDays(1+i + 3),
-                Status__c = Constants.BOOKING_PENDING,
-                Payment_Status__c = Constants.BOOKING_PENDING,
-                Final_Booking_Price__c = 300 + i
+            Car__c = cars[Math.MOD(i , cars.size())].Id,
+            Start_Date_Time__c = Date.today().addDays(1+i),
+            End_Date_Time__c = Date.today().addDays(1+i + 3),
+            Status__c = Constants.BOOKING_PENDING,
+            Payment_Status__c = Constants.BOOKING_PENDING,
+            Final_Booking_Price__c = 300 + i
                 //Security_Deposit__c = 100 + i
             ));
         }
