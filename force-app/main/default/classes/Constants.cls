@@ -17,4 +17,6 @@ public with sharing class Constants {
     public static final String CASE_RECORD_TYPE_REVIEW_ISSUE = 'Review_Issue';
     public static final String CASE_TYPE_NEGATIVE_REVIEW = 'Negative Review';
     public static final String CASE_PRIORITY_MEDIUM = 'Medium';
+    public static final String CAR_AVAILABILITY_STATUS = 'Available';
+    public static final String CAR_API_SUCCESS_MESSAGE = 'Available Cars fetch Successfully';
 }
