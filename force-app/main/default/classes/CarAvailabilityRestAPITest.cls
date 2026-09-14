@@ -46,8 +46,9 @@ private class CarAvailabilityRestAPITest {
         
         Test.stopTest();
         
-        System.debug(response);
+        // System.debug(response);
         System.assertEquals(true, response.isSuccess);
+        System.assertEquals(200, RestContext.response.statusCode);
     }
     
     private static String formatDate(Date inputDate){
