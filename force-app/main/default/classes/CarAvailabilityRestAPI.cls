@@ -82,6 +82,7 @@ global with sharing class CarAvailabilityRestAPI {
         
         if(cars.isEmpty())
         {
+            RestContext.response.statusCode = 200;
             return new ResponseWrapper(false, 'No cars available for the given criteria', new List<CarResponseWrapper>());
         }
         
@@ -93,7 +94,8 @@ global with sharing class CarAvailabilityRestAPI {
             availableCars.add(carResponse);
         }
         
-         System.debug('Test Start: response created');
+        System.debug('Test Start: response created');
+        RestContext.response.statusCode = 200;
         return new ResponseWrapper(true, Constants.CAR_API_SUCCESS_MESSAGE, availableCars);
     }
     
