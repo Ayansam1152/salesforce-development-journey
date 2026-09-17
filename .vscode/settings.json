@@ -15,5 +15,6 @@
   "salesforce.agentforceVibesAutocomplete.enableAutocompletions": true,
   "cSpell.words": [
     "Queueable"
-  ]
+  ],
+  "salesforcedx-vscode-apex-testing.restore-previous-results": false
 }
