@@ -1,0 +1,39 @@
+<template>
+    <!--filter section-->
+    <div class="filterStyle">
+        <lightning-layout horizontal-align="center" multiple-rows="true">
+            <lightning-layout-item padding="around-small" size="12" medium-device-size="3">
+                <lightning-combobox name="type" label="Type" placeholder="Select Type" value={selectedType}
+                    onchange={handleChange} options={typeOptions}>
+                </lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small" size="12" medium-device-size="7">
+                <lightning-input name="search" label="Search Item" placeholder="Search for movie/series" type="search"
+                    onchange={handleChange} is-loading={loading}></lightning-input>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small" size="12" medium-device-size="2">
+                <lightning-input type="number" name="pageno" label="Page" onchange={handleChange} value={selectedPageNo}
+                    field-level-help="Range 1-100" min="1" max="100"></lightning-input>
+            </lightning-layout-item>
+        </lightning-layout>
+    </div>
+    <!--movie tile section-->
+    <template lwc:if={displayResult}>
+        <div class="displayStyle slds-scrollable_y slds-m-top_large slds-box">
+            <lightning-layout multiple-rows="true">
+                <template for:each={searchResults} for:item="result">
+                    <lightning-layout-item key={result.imdbID} size="12" small-device-size="6" medium-device-size="4"
+                        large-device-size="3" padding="around-small">
+                        <c-movie-tile movie={result} onmovieselected={movieSelectedHandler}
+                            selected-movie={selectedMovieId}></c-movie-tile>
+                        <!-- <img src={result.Poster} alt="movie poster" height="200" width="200" />
+                    <br>
+                    <div>Type: {result.Type}</div>
+                    <div>Title: {result.Title}</div>
+                    <div>Year: {result.Year}</div> -->
+                    </lightning-layout-item>
+                </template>
+            </lightning-layout>
+        </div>
+    </template>
+</template>
