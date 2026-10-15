@@ -6,7 +6,7 @@
 }
 
 .displayStyle {
-    background-color: black;
+    background-color: rgb(75, 69, 69);
     height: min(600px, 70vh);
     overflow-y: auto;
 }
