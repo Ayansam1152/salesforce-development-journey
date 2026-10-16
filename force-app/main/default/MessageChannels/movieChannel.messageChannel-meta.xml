@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>MovieChannel</masterLabel>
+    <isExposed>true</isExposed>
+    <description>Message Channel to pass a movie to movie detail components</description>
+    <lightningMessageFields>
+        <fieldName>movieId</fieldName>
+        <description>This is the filter for car hunt</description>
+    </lightningMessageFields>
+</LightningMessageChannel>
