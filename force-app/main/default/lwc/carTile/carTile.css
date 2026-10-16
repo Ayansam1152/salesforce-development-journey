@@ -1,0 +1,24 @@
+.car-tile {
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.car-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: rgb(245, 249, 249);
+    border-color: rgb(47, 69, 240);
+}
+
+.image-container {
+    width: 100px;
+    height: 200px;
+}
+
+.tile-image {
+    /* width: 200px; */
+    /* height: 200px; */
+    object-fit: contain;
+    max-width: 200%;
+    height: auto;
+}

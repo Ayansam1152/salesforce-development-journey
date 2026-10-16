@@ -38,7 +38,7 @@ public with sharing class LogCleanupBatchProcess Implements Database.Batchable<S
         totalRecordProcessed+= scope.size();
         
         Database.DeleteResult[] results = Database.delete(scope, false);
-        Log logger;
+        Log logger = Log.get();
         for(Database.DeleteResult deleteRecord : results)
         {
             if(deleteRecord.isSuccess())

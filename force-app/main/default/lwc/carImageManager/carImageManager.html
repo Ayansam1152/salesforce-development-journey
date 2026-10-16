@@ -17,6 +17,7 @@
                 <c-placeholder message="No Car Images"></c-placeholder>
             </template>
         </div>
+        <template lwc:if={showUploadSection}>
         <div class="slds-var-p-around_small">
             <div class="slds-grid slds-grid_align-center slds-gutters">
                 <div class="slds-col slds-size_4-of-12">
@@ -39,5 +40,6 @@
                 </div>
             </div>
         </div>
+        </template>
     </lightning-card>
 </template>

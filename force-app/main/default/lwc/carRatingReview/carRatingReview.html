@@ -1,12 +1,13 @@
 <template>
     <lightning-card title="Car Rating & Reviews">
+        <template lwc:if={hasData}>
         <template lwc:if={reviews}>
-            <div class="slds-ver-p-around-small">
+            <div class="slds-var-p-around_small">
                 <div class="slds-grid slds-gutters">
                     <div class="slds-col slds-size_1-of-3">
                         <c-star-rating value={averageRating} max-value="5" read-only></c-star-rating>
                     </div>
-                    <div class="slds-col sold-size_2-of-3">
+                    <div class="slds-col slds-size_2-of-3">
                         Based on {totalReviews} reviews
                     </div>
                 </div>
@@ -55,6 +56,7 @@
         </template>
         <template lwc:else>
             <c-placeholder message="No Reviews found"></c-placeholder>
+        </template>
         </template>
     </lightning-card>
 </template>
